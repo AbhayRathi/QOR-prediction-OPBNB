@@ -856,10 +856,22 @@ const DAOPage = () => {
     description: "",
     action: ""
   });
+  
+  // Web3 hooks
+  const { isConnected } = useIsConnected();
+  const voteHook = useVoteOnProposal();
 
   useEffect(() => {
     loadProposals();
   }, []);
+  
+  // Auto-reload after successful vote
+  useEffect(() => {
+    if (voteHook.isSuccess) {
+      showTxSuccess(voteHook.hash, "Vote recorded on blockchain!");
+      setTimeout(() => loadProposals(), 2000);
+    }
+  }, [voteHook.isSuccess]);
 
   const loadProposals = async () => {
     try {
@@ -886,17 +898,28 @@ const DAOPage = () => {
   };
 
   const handleVote = async (proposalId, support) => {
+    // Check wallet connection
+    if (!isConnected) {
+      showConnectWalletWarning();
+      return;
+    }
+    
     try {
+      showTxPending(`Voting ${support ? "YES" : "NO"}...`);
+      
+      // Vote on blockchain
+      await voteHook.vote(proposalId, support);
+      
+      // Also save to backend
       await axios.post(`${API}/dao/vote`, {
         proposal_id: proposalId,
         support,
         weight: 1.0
       });
-      toast.success(`Voted ${support ? "YES" : "NO"}!`);
-      loadProposals();
+      
     } catch (e) {
       console.error(e);
-      toast.error("Vote failed");
+      showTxError(e, "Vote failed");
     }
   };
 
