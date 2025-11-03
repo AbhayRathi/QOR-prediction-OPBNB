@@ -497,13 +497,43 @@ const TaskDetailPage = () => {
   const [task, setTask] = useState(null);
   const [robot, setRobot] = useState(null);
   const [positions, setPositions] = useState([]);
-  const [tradeAmount, setTradeAmount] = useState("10");
+  const [tradeAmount, setTradeAmount] = useState("0.01");
   const [userName, setUserName] = useState("user_demo");
   const [optimizeResult, setOptimizeResult] = useState(null);
+  
+  // Web3 hooks
+  const { isConnected } = useIsConnected();
+  const buyYesHook = useBuyYes();
+  const buyNoHook = useBuyNo();
+  const redeemHook = useRedeemWinnings();
 
   useEffect(() => {
     loadTask();
   }, [id]);
+  
+  // Auto-reload after successful YES trade
+  useEffect(() => {
+    if (buyYesHook.isSuccess) {
+      showTxSuccess(buyYesHook.hash, "YES shares purchased!");
+      setTimeout(() => loadTask(), 2000);
+    }
+  }, [buyYesHook.isSuccess]);
+  
+  // Auto-reload after successful NO trade
+  useEffect(() => {
+    if (buyNoHook.isSuccess) {
+      showTxSuccess(buyNoHook.hash, "NO shares purchased!");
+      setTimeout(() => loadTask(), 2000);
+    }
+  }, [buyNoHook.isSuccess]);
+  
+  // Auto-reload after successful redeem
+  useEffect(() => {
+    if (redeemHook.isSuccess) {
+      showTxSuccess(redeemHook.hash, "Winnings redeemed!");
+      setTimeout(() => loadTask(), 2000);
+    }
+  }, [redeemHook.isSuccess]);
 
   const loadTask = async () => {
     try {
@@ -522,17 +552,34 @@ const TaskDetailPage = () => {
   };
 
   const handleTrade = async (side) => {
+    // Check wallet connection for blockchain trades
+    if (!isConnected) {
+      showConnectWalletWarning();
+      return;
+    }
+    
     try {
+      const amount = parseFloat(tradeAmount);
+      
+      showTxPending(`Buying ${side.toUpperCase()} shares...`);
+      
+      // Execute blockchain transaction
+      if (side === "yes") {
+        await buyYesHook.buyYes(id, amount);
+      } else {
+        await buyNoHook.buyNo(id, amount);
+      }
+      
+      // Also save to backend for indexing
       await axios.post(`${API}/tasks/${id}/trade`, {
         user: userName,
-        amount: parseFloat(tradeAmount),
+        amount: amount,
         side
       });
-      toast.success(`Bought ${tradeAmount} ${side.toUpperCase()} shares!`);
-      loadTask();
+      
     } catch (e) {
       console.error(e);
-      toast.error("Trade failed");
+      showTxError(e, "Trade failed");
     }
   };
 
