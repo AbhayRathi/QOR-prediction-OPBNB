@@ -963,18 +963,22 @@ const Navigation = () => {
 // ===== MAIN APP =====
 function App() {
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Navigation />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/robots" element={<RobotsPage />} />
-          <Route path="/tasks" element={<TasksPage />} />
-          <Route path="/tasks/:id" element={<TaskDetailPage />} />
-          <Route path="/dao" element={<DAOPage />} />
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <div className="App">
+          <BrowserRouter>
+            <Navigation />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/robots" element={<RobotsPage />} />
+              <Route path="/tasks" element={<TasksPage />} />
+              <Route path="/tasks/:id" element={<TaskDetailPage />} />
+              <Route path="/dao" element={<DAOPage />} />
+            </Routes>
+          </BrowserRouter>
+        </div>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }
 
