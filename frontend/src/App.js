@@ -252,11 +252,13 @@ const RobotsPage = () => {
       {showForm && (
         <Card className="register-card" data-testid="register-robot-form">
           <CardHeader>
-            <CardTitle>Register New Robot</CardTitle>
-            <CardDescription>Stake tokens to activate your agent</CardDescription>
+            <CardTitle>{editingRobot ? "Edit Robot" : "Register New Robot"}</CardTitle>
+            <CardDescription>
+              {editingRobot ? "Update robot details (description, capabilities, or increase stake)" : "Stake tokens to activate your agent"}
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleRegister} className="form-grid">
+            <form onSubmit={editingRobot ? handleUpdate : handleRegister} className="form-grid">
               <div className="form-field">
                 <Label htmlFor="name">Robot Name</Label>
                 <Input
@@ -265,7 +267,9 @@ const RobotsPage = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                   required
+                  disabled={editingRobot !== null}
                 />
+                {editingRobot && <span className="text-sm text-gray-500">Name cannot be changed</span>}
               </div>
               <div className="form-field">
                 <Label htmlFor="description">Description</Label>
@@ -289,23 +293,33 @@ const RobotsPage = () => {
                 />
               </div>
               <div className="form-field">
-                <Label htmlFor="stake">Stake Amount (tokens)</Label>
+                <Label htmlFor="stake">{editingRobot ? "Increase Stake (optional)" : "Stake Amount (tokens)"}</Label>
                 <Input
                   id="stake"
                   type="number"
                   data-testid="robot-stake-input"
                   value={formData.stake_amount}
                   onChange={(e) => setFormData({...formData, stake_amount: e.target.value})}
-                  required
+                  required={!editingRobot}
                 />
+                {editingRobot && <span className="text-sm text-gray-500">Leave 0 to keep current stake</span>}
               </div>
               <Button type="submit" className="submit-btn" data-testid="submit-robot-btn">
-                Register Robot
+                {editingRobot ? "Update Robot" : "Register Robot"}
               </Button>
             </form>
           </CardContent>
         </Card>
       )}
+
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog({ ...deleteDialog, open })}
+        title="Delete Robot"
+        description="Are you sure you want to delete this robot? This action cannot be undone. The robot must not have any active tasks."
+        onConfirm={handleDelete}
+        confirmText="Delete"
+      />
 
       <div className="robots-grid">
         {robots.map((robot) => (
