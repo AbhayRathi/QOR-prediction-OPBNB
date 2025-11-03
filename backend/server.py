@@ -420,6 +420,20 @@ async def verify_task(input: VerifyRequest):
         {"$inc": {"reputation": reputation_delta}}
     )
     
+    # Submit verification to blockchain (if connected)
+    if web3_service and web3_service.is_connected():
+        try:
+            task_id_bytes = bytes.fromhex(input.task_id.replace('-', ''))
+            robot_id_bytes = bytes.fromhex(task["robot_id"].replace('-', ''))
+            web3_service.verify_task(
+                task_id_bytes,
+                robot_id_bytes,
+                int(required_score * 100),  # Convert to integer
+                input.evidence_uri
+            )
+        except Exception as e:
+            print(f"⚠️  Could not verify on blockchain: {e}")
+    
     result = VerifyResult(
         task_id=input.task_id,
         success=success,
