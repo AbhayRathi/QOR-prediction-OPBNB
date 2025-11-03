@@ -118,12 +118,14 @@ const Home = () => {
 const RobotsPage = () => {
   const [robots, setRobots] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [editingRobot, setEditingRobot] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     capabilities: "",
     stake_amount: "0.01"
   });
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, robotId: null });
   
   // Web3 hooks
   const { isConnected } = useIsConnected();
@@ -139,6 +141,7 @@ const RobotsPage = () => {
       showTxSuccess(hash, "Robot registered on blockchain!");
       setTimeout(() => loadRobots(), 2000);
       setShowForm(false);
+      setEditingRobot(null);
       setFormData({ name: "", description: "", capabilities: "", stake_amount: "0.01" });
     }
   }, [isSuccess, hash]);
@@ -185,6 +188,52 @@ const RobotsPage = () => {
     } catch (e) {
       console.error(e);
       showTxError(e, "Failed to register robot");
+    }
+  };
+  
+  const handleEdit = (robot) => {
+    setEditingRobot(robot);
+    setFormData({
+      name: robot.name,
+      description: robot.description,
+      capabilities: robot.capabilities.join(", "),
+      stake_amount: "0"
+    });
+    setShowForm(true);
+  };
+  
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      const capabilities = formData.capabilities.split(",").map(c => c.trim());
+      const stakeIncrease = parseFloat(formData.stake_amount);
+      
+      await axios.put(`${API}/robots/${editingRobot.id}`, {
+        description: formData.description,
+        capabilities: capabilities,
+        stake_increase: stakeIncrease > 0 ? stakeIncrease : null
+      });
+      
+      toast.success("Robot updated successfully!");
+      setShowForm(false);
+      setEditingRobot(null);
+      setFormData({ name: "", description: "", capabilities: "", stake_amount: "0.01" });
+      loadRobots();
+    } catch (e) {
+      console.error(e);
+      toast.error(e.response?.data?.detail || "Failed to update robot");
+    }
+  };
+  
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`${API}/robots/${deleteDialog.robotId}`);
+      toast.success("Robot deleted successfully!");
+      setDeleteDialog({ open: false, robotId: null });
+      loadRobots();
+    } catch (e) {
+      console.error(e);
+      toast.error(e.response?.data?.detail || "Failed to delete robot");
     }
   };
 
