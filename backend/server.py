@@ -20,6 +20,16 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# Web3 service
+try:
+    from web3_service import web3_service
+    print(f"✅ Web3 service loaded. Connected: {web3_service.is_connected()}")
+    print(f"   Oracle Address: {web3_service.oracle_account.address}")
+    print(f"   Contract Addresses: {web3_service.contract_addresses}")
+except Exception as e:
+    print(f"⚠️  Web3 service not available: {e}")
+    web3_service = None
+
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
