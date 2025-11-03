@@ -327,9 +327,29 @@ const RobotsPage = () => {
             <CardHeader>
               <div className="robot-header">
                 <CardTitle className="robot-name">{robot.name}</CardTitle>
-                <Badge variant={robot.active ? "default" : "secondary"} data-testid={`robot-status-${robot.id}`}>
-                  {robot.active ? "Active" : "Inactive"}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant={robot.active ? "default" : "secondary"} data-testid={`robot-status-${robot.id}`}>
+                    {robot.active ? "Active" : "Inactive"}
+                  </Badge>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => handleEdit(robot)}
+                    data-testid={`edit-robot-${robot.id}`}
+                    className="edit-btn-icon"
+                  >
+                    ✏️
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setDeleteDialog({ open: true, robotId: robot.id })}
+                    data-testid={`delete-robot-${robot.id}`}
+                    className="delete-btn-icon"
+                  >
+                    🗑️
+                  </Button>
+                </div>
               </div>
               <CardDescription>{robot.description}</CardDescription>
             </CardHeader>
