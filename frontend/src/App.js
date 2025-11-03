@@ -954,6 +954,7 @@ const Navigation = () => {
         <Link to="/robots" className="nav-link" data-testid="nav-robots">Robots</Link>
         <Link to="/tasks" className="nav-link" data-testid="nav-tasks">Markets</Link>
         <Link to="/dao" className="nav-link" data-testid="nav-dao">DAO</Link>
+        <WalletConnect />
       </div>
     </nav>
   );
