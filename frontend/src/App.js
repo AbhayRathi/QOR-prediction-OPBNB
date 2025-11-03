@@ -733,19 +733,19 @@ const TaskDetailPage = () => {
                   <div className="trade-buttons">
                     <Button
                       onClick={() => handleTrade("yes")}
-                      disabled={task.status !== "active"}
+                      disabled={task.status !== "active" || buyYesHook.isPending || buyYesHook.isConfirming}
                       className="yes-btn"
                       data-testid="buy-yes-btn"
                     >
-                      Buy YES
+                      {buyYesHook.isPending || buyYesHook.isConfirming ? 'Buying...' : 'Buy YES'}
                     </Button>
                     <Button
                       onClick={() => handleTrade("no")}
-                      disabled={task.status !== "active"}
+                      disabled={task.status !== "active" || buyNoHook.isPending || buyNoHook.isConfirming}
                       className="no-btn"
                       data-testid="buy-no-btn"
                     >
-                      Buy NO
+                      {buyNoHook.isPending || buyNoHook.isConfirming ? 'Buying...' : 'Buy NO'}
                     </Button>
                   </div>
                 </div>
