@@ -369,6 +369,46 @@ async def redeem_position(task_id: str, user: str):
     
     return {"message": "Positions redeemed", "payout": total_payout, "user": user}
 
+class TaskUpdate(BaseModel):
+    deadline: Optional[str] = None
+
+@api_router.put("/tasks/{task_id}")
+async def update_task(task_id: str, update: TaskUpdate):
+    task = await db.tasks.find_one({"id": task_id}, {"_id": 0})
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    if task["status"] == "resolved":
+        raise HTTPException(status_code=400, detail="Cannot edit resolved task")
+    
+    # Only allow extending deadline
+    if update.deadline:
+        await db.tasks.update_one(
+            {"id": task_id},
+            {"$set": {"deadline": update.deadline}}
+        )
+    
+    return {"message": "Task updated", "task_id": task_id}
+
+@api_router.delete("/tasks/{task_id}")
+async def delete_task(task_id: str):
+    task = await db.tasks.find_one({"id": task_id}, {"_id": 0})
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    # Can't delete if resolved
+    if task["status"] == "resolved":
+        raise HTTPException(status_code=400, detail="Cannot delete resolved task")
+    
+    # Can't delete if there are trades
+    if task["yes_pool"] > 0 or task["no_pool"] > 0:
+        raise HTTPException(status_code=400, detail="Cannot delete task with existing trades")
+    
+    # Hard delete
+    await db.tasks.delete_one({"id": task_id})
+    
+    return {"message": "Task deleted", "task_id": task_id}
+
 # ===== OPTIMIZER =====
 @api_router.post("/optimizer/optimize", response_model=OptimizeResult)
 async def optimize_task(input: OptimizeRequest):
