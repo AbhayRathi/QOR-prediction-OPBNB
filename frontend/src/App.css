@@ -68,6 +68,7 @@ h1, h2, h3, h4 {
 .nav-links {
   display: flex;
   gap: 2rem;
+  align-items: center;
 }
 
 .nav-link {
@@ -80,6 +81,46 @@ h1, h2, h3, h4 {
 
 .nav-link:hover {
   color: var(--accent-cyan);
+}
+
+/* Wallet Connection */
+.wallet-connected {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.wallet-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.wallet-address {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  font-family: 'Courier New', monospace;
+}
+
+.wallet-chain {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.connect-wallet-btn {
+  background: var(--accent-cyan) !important;
+  color: #0a0e1a !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  padding: 0.5rem 1.5rem !important;
+  transition: transform 0.2s, box-shadow 0.2s !important;
+}
+
+.connect-wallet-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(34, 211, 238, 0.3);
 }
 
 /* Home Page */
