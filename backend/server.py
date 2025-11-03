@@ -367,6 +367,18 @@ async def optimize_task(input: OptimizeRequest):
         }}
     )
     
+    # Submit to blockchain (if connected)
+    if web3_service and web3_service.is_connected():
+        try:
+            task_id_bytes = bytes.fromhex(input.task_id.replace('-', ''))
+            web3_service.submit_optimization_result(
+                task_id_bytes,
+                solution_uri,
+                int(score * 100)  # Convert to integer (score out of 10000)
+            )
+        except Exception as e:
+            print(f"⚠️  Could not submit to blockchain: {e}")
+    
     result = OptimizeResult(
         task_id=input.task_id,
         solution_uri=solution_uri,
