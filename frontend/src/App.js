@@ -119,12 +119,26 @@ const RobotsPage = () => {
     name: "",
     description: "",
     capabilities: "",
-    stake_amount: "100"
+    stake_amount: "0.01"
   });
+  
+  // Web3 hooks
+  const { isConnected } = useIsConnected();
+  const { registerRobot, isPending, isConfirming, isSuccess, hash } = useRegisterRobot();
 
   useEffect(() => {
     loadRobots();
   }, []);
+  
+  // Auto-reload robots after successful blockchain registration
+  useEffect(() => {
+    if (isSuccess) {
+      showTxSuccess(hash, "Robot registered on blockchain!");
+      setTimeout(() => loadRobots(), 2000);
+      setShowForm(false);
+      setFormData({ name: "", description: "", capabilities: "", stake_amount: "0.01" });
+    }
+  }, [isSuccess, hash]);
 
   const loadRobots = async () => {
     try {
@@ -138,21 +152,36 @@ const RobotsPage = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    
+    // Check wallet connection
+    if (!isConnected) {
+      showConnectWalletWarning();
+      return;
+    }
+    
     try {
       const capabilities = formData.capabilities.split(",").map(c => c.trim());
+      
+      // Show pending message
+      showTxPending("Registering robot on blockchain...");
+      
+      // Register on blockchain first
+      const { robotIdHash, metadataURI } = await registerRobot({
+        name: formData.name,
+        stake_amount: parseFloat(formData.stake_amount)
+      });
+      
+      // Also save to backend DB for indexing
       await axios.post(`${API}/robots/register`, {
         name: formData.name,
         description: formData.description,
         capabilities,
         stake_amount: parseFloat(formData.stake_amount)
       });
-      toast.success("Robot registered successfully!");
-      setShowForm(false);
-      setFormData({ name: "", description: "", capabilities: "", stake_amount: "100" });
-      loadRobots();
+      
     } catch (e) {
       console.error(e);
-      toast.error("Failed to register robot");
+      showTxError(e, "Failed to register robot");
     }
   };
 
