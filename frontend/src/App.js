@@ -18,6 +18,7 @@ import { config } from './web3/config';
 import { WalletConnect } from './components/WalletConnect';
 import { useRegisterRobot, useBuyYes, useBuyNo, useRedeemWinnings, useVoteOnProposal, useIsConnected } from './web3/hooks';
 import { showTxPending, showTxSuccess, showTxError, showConnectWalletWarning } from './web3/txHelpers';
+import { ConfirmDialog } from './components/ConfirmDialog';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
