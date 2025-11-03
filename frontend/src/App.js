@@ -611,13 +611,24 @@ const TaskDetailPage = () => {
   };
 
   const handleRedeem = async () => {
+    // Check wallet connection
+    if (!isConnected) {
+      showConnectWalletWarning();
+      return;
+    }
+    
     try {
+      showTxPending("Redeeming winnings...");
+      
+      // Redeem on blockchain
+      await redeemHook.redeem(id);
+      
+      // Also update backend
       const res = await axios.post(`${API}/tasks/${id}/redeem?user=${userName}`);
-      toast.success(`Redeemed! Payout: ${res.data.payout.toFixed(2)} tokens`);
-      loadTask();
+      
     } catch (e) {
       console.error(e);
-      toast.error("Redemption failed");
+      showTxError(e, "Redemption failed");
     }
   };
 
