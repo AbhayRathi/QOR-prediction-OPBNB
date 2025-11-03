@@ -213,6 +213,44 @@ async def deactivate_robot(robot_id: str):
         raise HTTPException(status_code=404, detail="Robot not found")
     return {"message": "Robot deactivated", "robot_id": robot_id}
 
+class RobotUpdate(BaseModel):
+    description: Optional[str] = None
+    capabilities: Optional[List[str]] = None
+    stake_increase: Optional[float] = None
+
+@api_router.put("/robots/{robot_id}")
+async def update_robot(robot_id: str, update: RobotUpdate):
+    robot = await db.robots.find_one({"id": robot_id}, {"_id": 0})
+    if not robot:
+        raise HTTPException(status_code=404, detail="Robot not found")
+    
+    update_data = {}
+    if update.description is not None:
+        update_data["description"] = update.description
+    if update.capabilities is not None:
+        update_data["capabilities"] = update.capabilities
+    if update.stake_increase is not None and update.stake_increase > 0:
+        update_data["stake"] = robot["stake"] + update.stake_increase
+    
+    if update_data:
+        await db.robots.update_one({"id": robot_id}, {"$set": update_data})
+    
+    return {"message": "Robot updated", "robot_id": robot_id}
+
+@api_router.delete("/robots/{robot_id}")
+async def delete_robot(robot_id: str):
+    # Check if robot has active tasks
+    active_tasks = await db.tasks.find_one({"robot_id": robot_id, "status": "active"})
+    if active_tasks:
+        raise HTTPException(status_code=400, detail="Cannot delete robot with active tasks")
+    
+    # Hard delete from database
+    result = await db.robots.delete_one({"id": robot_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Robot not found")
+    
+    return {"message": "Robot deleted", "robot_id": robot_id}
+
 # ===== TASKS/MARKETS =====
 @api_router.post("/tasks/create", response_model=Task)
 async def create_task(input: TaskCreate):
