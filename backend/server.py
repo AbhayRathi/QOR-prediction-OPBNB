@@ -588,6 +588,45 @@ async def execute_proposal(proposal_id: str):
         )
         return {"message": "Proposal rejected"}
 
+@api_router.delete("/dao/proposals/{proposal_id}")
+async def delete_proposal(proposal_id: str):
+    proposal = await db.proposals.find_one({"id": proposal_id}, {"_id": 0})
+    if not proposal:
+        raise HTTPException(status_code=404, detail="Proposal not found")
+    
+    # Can only delete if no votes yet
+    if proposal["yes_votes"] > 0 or proposal["no_votes"] > 0:
+        raise HTTPException(status_code=400, detail="Cannot delete proposal with existing votes")
+    
+    # Hard delete
+    await db.proposals.delete_one({"id": proposal_id})
+    
+    return {"message": "Proposal deleted", "proposal_id": proposal_id}
+
+@api_router.post("/dao/proposals/{proposal_id}/withdraw")
+async def withdraw_proposal(proposal_id: str):
+    proposal = await db.proposals.find_one({"id": proposal_id}, {"_id": 0})
+    if not proposal:
+        raise HTTPException(status_code=404, detail="Proposal not found")
+    
+    if proposal["status"] != "active":
+        raise HTTPException(status_code=400, detail="Proposal not active")
+    
+    # Check if majority votes to withdraw
+    total_votes = proposal["yes_votes"] + proposal["no_votes"]
+    if total_votes > 0:
+        # Need majority to withdraw
+        if proposal["no_votes"] <= proposal["yes_votes"]:
+            raise HTTPException(status_code=400, detail="Majority vote needed to withdraw")
+    
+    # Mark as withdrawn
+    await db.proposals.update_one(
+        {"id": proposal_id},
+        {"$set": {"status": "withdrawn"}}
+    )
+    
+    return {"message": "Proposal withdrawn", "proposal_id": proposal_id}
+
 # ===== IPFS MOCK =====
 @api_router.post("/ipfs/upload", response_model=IPFSResult)
 async def upload_to_ipfs(input: IPFSUpload):
