@@ -382,6 +382,10 @@ const TasksPage = () => {
   const [tasks, setTasks] = useState([]);
   const [robots, setRobots] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [newDeadline, setNewDeadline] = useState("");
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, taskId: null });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -405,6 +409,45 @@ const TasksPage = () => {
       setRobots(res.data);
     } catch (e) {
       console.error(e);
+    }
+  };
+  
+  const handleEditClick = (task, e) => {
+    e.stopPropagation();
+    setEditingTask(task);
+    setNewDeadline(task.deadline);
+    setShowEditModal(true);
+  };
+  
+  const handleUpdateDeadline = async () => {
+    try {
+      await axios.put(`${API}/tasks/${editingTask.id}`, {
+        deadline: newDeadline
+      });
+      toast.success("Deadline updated successfully!");
+      setShowEditModal(false);
+      setEditingTask(null);
+      loadTasks();
+    } catch (e) {
+      console.error(e);
+      toast.error(e.response?.data?.detail || "Failed to update task");
+    }
+  };
+  
+  const handleDeleteClick = (taskId, e) => {
+    e.stopPropagation();
+    setDeleteDialog({ open: true, taskId });
+  };
+  
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`${API}/tasks/${deleteDialog.taskId}`);
+      toast.success("Task deleted successfully!");
+      setDeleteDialog({ open: false, taskId: null });
+      loadTasks();
+    } catch (e) {
+      console.error(e);
+      toast.error(e.response?.data?.detail || "Failed to delete task");
     }
   };
 
