@@ -746,6 +746,54 @@ code {
   color: var(--text-secondary);
 }
 
+/* Edit/Delete Buttons */
+.edit-btn-icon,
+.delete-btn-icon,
+.withdraw-btn-icon {
+  padding: 0.25rem 0.5rem !important;
+  font-size: 1rem;
+  transition: transform 0.2s, opacity 0.2s;
+  opacity: 0.7;
+}
+
+.edit-btn-icon:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.delete-btn-icon:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.withdraw-btn-icon:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Edit Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.edit-modal {
+  max-width: 500px;
+  width: 90%;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .nav {
