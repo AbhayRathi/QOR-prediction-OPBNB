@@ -473,9 +473,33 @@ const TasksPage = () => {
             <CardHeader>
               <div className="task-header">
                 <CardTitle className="task-title">{task.title}</CardTitle>
-                <Badge variant={task.status === "active" ? "default" : "secondary"} data-testid={`task-status-${task.id}`}>
-                  {task.status}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant={task.status === "active" ? "default" : "secondary"} data-testid={`task-status-${task.id}`}>
+                    {task.status}
+                  </Badge>
+                  {task.status !== "resolved" && (
+                    <>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={(e) => handleEditClick(task, e)}
+                        data-testid={`edit-task-${task.id}`}
+                        className="edit-btn-icon"
+                      >
+                        ✏️
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={(e) => handleDeleteClick(task.id, e)}
+                        data-testid={`delete-task-${task.id}`}
+                        className="delete-btn-icon"
+                      >
+                        🗑️
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
               <CardDescription>{task.description}</CardDescription>
             </CardHeader>
@@ -499,6 +523,41 @@ const TasksPage = () => {
           </Card>
         ))}
       </div>
+      
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog({ ...deleteDialog, open })}
+        title="Delete Task"
+        description="Are you sure you want to delete this task? This can only be done if there are no trades yet. This action cannot be undone."
+        onConfirm={handleDelete}
+        confirmText="Delete"
+      />
+      
+      {showEditModal && (
+        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+          <Card className="edit-modal" onClick={(e) => e.stopPropagation()}>
+            <CardHeader>
+              <CardTitle>Edit Task Deadline</CardTitle>
+              <CardDescription>Extend the deadline for this task</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="form-field">
+                <Label htmlFor="newDeadline">New Deadline</Label>
+                <Input
+                  id="newDeadline"
+                  type="datetime-local"
+                  value={newDeadline}
+                  onChange={(e) => setNewDeadline(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-2 mt-4">
+                <Button onClick={handleUpdateDeadline}>Update Deadline</Button>
+                <Button variant="outline" onClick={() => setShowEditModal(false)}>Cancel</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
