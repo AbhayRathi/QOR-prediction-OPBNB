@@ -1211,9 +1211,33 @@ const DAOPage = () => {
             <CardHeader>
               <div className="proposal-header">
                 <CardTitle className="proposal-title">{proposal.title}</CardTitle>
-                <Badge variant={proposal.status === "active" ? "default" : "secondary"} data-testid={`proposal-status-${proposal.id}`}>
-                  {proposal.status}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant={proposal.status === "active" ? "default" : "secondary"} data-testid={`proposal-status-${proposal.id}`}>
+                    {proposal.status}
+                  </Badge>
+                  {proposal.status === "active" && proposal.yes_votes === 0 && proposal.no_votes === 0 && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setDeleteDialog({ open: true, proposalId: proposal.id })}
+                      data-testid={`delete-proposal-${proposal.id}`}
+                      className="delete-btn-icon"
+                    >
+                      🗑️
+                    </Button>
+                  )}
+                  {proposal.status === "active" && (proposal.yes_votes > 0 || proposal.no_votes > 0) && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setWithdrawDialog({ open: true, proposalId: proposal.id })}
+                      data-testid={`withdraw-proposal-${proposal.id}`}
+                      className="withdraw-btn-icon"
+                    >
+                      ↩️
+                    </Button>
+                  )}
+                </div>
               </div>
               <CardDescription>{proposal.description}</CardDescription>
             </CardHeader>
@@ -1262,6 +1286,25 @@ const DAOPage = () => {
           </Card>
         ))}
       </div>
+      
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog({ ...deleteDialog, open })}
+        title="Delete Proposal"
+        description="Are you sure you want to delete this proposal? This can only be done if there are no votes yet. This action cannot be undone."
+        onConfirm={handleDelete}
+        confirmText="Delete"
+      />
+      
+      <ConfirmDialog
+        open={withdrawDialog.open}
+        onOpenChange={(open) => setWithdrawDialog({ ...withdrawDialog, open })}
+        title="Withdraw Proposal"
+        description="Are you sure you want to withdraw this proposal? A majority of NO votes is required to withdraw a proposal that already has votes."
+        onConfirm={handleWithdraw}
+        confirmText="Withdraw"
+        variant="default"
+      />
     </div>
   );
 };
