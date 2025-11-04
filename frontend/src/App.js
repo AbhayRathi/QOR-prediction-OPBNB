@@ -1042,6 +1042,8 @@ const DAOPage = () => {
     description: "",
     action: ""
   });
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, proposalId: null });
+  const [withdrawDialog, setWithdrawDialog] = useState({ open: false, proposalId: null });
   
   // Web3 hooks
   const { isConnected } = useIsConnected();
@@ -1117,6 +1119,30 @@ const DAOPage = () => {
     } catch (e) {
       console.error(e);
       toast.error("Execution failed");
+    }
+  };
+  
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`${API}/dao/proposals/${deleteDialog.proposalId}`);
+      toast.success("Proposal deleted successfully!");
+      setDeleteDialog({ open: false, proposalId: null });
+      loadProposals();
+    } catch (e) {
+      console.error(e);
+      toast.error(e.response?.data?.detail || "Failed to delete proposal");
+    }
+  };
+  
+  const handleWithdraw = async () => {
+    try {
+      await axios.post(`${API}/dao/proposals/${withdrawDialog.proposalId}/withdraw`);
+      toast.success("Proposal withdrawn!");
+      setWithdrawDialog({ open: false, proposalId: null });
+      loadProposals();
+    } catch (e) {
+      console.error(e);
+      toast.error(e.response?.data?.detail || "Failed to withdraw proposal");
     }
   };
 
